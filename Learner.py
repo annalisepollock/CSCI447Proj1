@@ -3,6 +3,7 @@ class Learner:
 
     def __init__(self, data, classPlace):
         self.data = data
+        self.size = data.shape[0]
         self.classPlace = classPlace
         self.train()
     
@@ -13,7 +14,7 @@ class Learner:
         for index, row in self.data.iterrows():
             if row[self.classPlace] not in classes:
                 classes.append(row[self.classPlace])
-                classify = Class.Class(row[self.classPlace], 600)
+                classify = Class.Class(row[self.classPlace], self.size)
                 classesData[row[self.classPlace]] = classify
             classesData[row[self.classPlace]].add_data(row)
         print(classesData)
@@ -23,3 +24,11 @@ class Learner:
             print()
             classesData[c].createAttributes()
             print()
+
+    def classify(self, testData):
+        #for example in testData:
+        #    for c in classesData.keys():
+        #        classesData[c].classify(example - class column)
+        #     answer = max(classesData, key=classesData.get)
+        # 
+        return #class
