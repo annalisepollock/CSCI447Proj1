@@ -1,35 +1,74 @@
+import math
 import pandas as pd
 import Learner
-from io import StringIO
+from ucimlrepo import fetch_ucirepo
 
 def main():
-    
-    dataFile = open("/Users/annalise/Downloads/breast-cancer-wisconsin.data", "r")
-    #grab class location
-    data = pd.DataFrame(dataFile)[0].str.split(',', expand=True).replace('\n', '', regex=True)
-    train, test = testSet(data)
-    learner = Learner.Learner(train, 10, True, 0)
-    learner.classify(test)
+    # fetch datasets
+    breastCancerData =  fetch_ucirepo(id=15)
+    breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
 
+    # BREAST CANCER DATASET CLEANING
+    # curated data cleaning: breast cancer data
+    breastCancerNoId = breastCancerDataFrame.drop(columns=['Sample_code_number']) # remove ID column
 
-def accuracyStats():
-    return 
+    breastCancerClean = cleanData(breastCancerData, breastCancerNoId, False)
+    breastCancerClean['Bare_nuclei'] = breastCancerClean['Bare_nuclei'].astype(int)
+    # END BREAST CANCER DATASET CLEANING
 
-def cleanData(dataSet, noise, classPlace):
-    
+    breastCancerFolds = crossValidation(breastCancerClean)
+
+    #learner = Learner.Learner(data, 10)
+    print("Done")
+
+def cleanData(dataOriginal, dataSet, noise):
+    dataVariables = pd.DataFrame(dataOriginal.variables)
+
     if(noise):
         addNoise(dataSet)
-    #clean data
-    return dataSet.drop(classPlace, axis=1)
+
+    # Remove any rows where all values are null
+    dataRemovedNullRows = dataSet.dropna(how = 'all')
+
+    # Columns must have 90% of their values for rows to remain in dataset
+    dataRemovedNullCols = dataRemovedNullRows.dropna(axis=1, thresh = math.floor(0.90*dataSet.shape[0]))
+
+    # Iterate through columns; if numerical, fillna with mean
+    # if categorical/binary, use forward fill/backfill
+    # round values to nearest int so that na's can be filled with this value regardless if continuous or discrete
+    dataSetNoNull = dataRemovedNullCols.fillna(round(dataRemovedNullCols.mean()))
+
+    #print(dataSetNoNull.to_string())
+    # Continuous attributes - discretize
+
+
+    return dataSetNoNull
 
 def addNoise(dataSet):
-    #add noise to the data set
+    # add noise to the data set
     return dataSet
 
-def testSet(dataSet):
-    toDrop = dataSet.sample(frac=0.15).index
-    test = dataSet.loc[toDrop]
-    train = dataSet.drop(toDrop)
-    return train, test
+def crossValidation(cleanDataset):
+    # array to hold 10 randomly selected groups from the dataset
+    dataChunks = [None] * 10
+    numRows = math.floor(cleanDataset.shape[0]/10)
+    tempDataset = cleanDataset
+
+    for i in range(9):
+        # randomly select 1/10 of the dataset, put it in the array
+        chunk = tempDataset.sample(n=numRows)
+        print("chunk sample size for " + str(i) + ": " + str(chunk.shape[0]))
+        dataChunks[i] = chunk
+
+        # rest of dataset without selected chunk
+        tempDataset = tempDataset.drop(chunk.index)
+
+    print("size of remaining data: " + str(tempDataset.shape[0]))
+    # the last chunk might be slightly different size if dataset size is not divisible by 10
+    dataChunks[9] = tempDataset
+
+    # rotate each part to be used as testing 1x
+    # call learn, classify, etc. on each version of the train/test data
+    return dataChunks
 
 main()
