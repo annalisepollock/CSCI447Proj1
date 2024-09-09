@@ -12,18 +12,17 @@ def main():
     # curated data cleaning: breast cancer data
     breastCancerNoId = breastCancerDataFrame.drop(columns=['Sample_code_number']) # remove ID column
 
-    breastCancerClean = cleanData(breastCancerData, breastCancerNoNull, False)
+    breastCancerClean = cleanData(breastCancerData, breastCancerNoId, False)
     breastCancerClean['Bare_nuclei'] = breastCancerClean['Bare_nuclei'].astype(int)
-
     # END BREAST CANCER DATASET CLEANING
+
+    breastCancerFolds = crossValidation(breastCancerClean)
 
     #learner = Learner.Learner(data, 10)
     print("Done")
 
 def cleanData(dataOriginal, dataSet, noise):
     dataVariables = pd.DataFrame(dataOriginal.variables)
-    print(dataVariables.to_string())
-    #dataMetadata = dataSet.metadata
 
     if(noise):
         addNoise(dataSet)
@@ -50,8 +49,26 @@ def addNoise(dataSet):
     return dataSet
 
 def crossValidation(cleanDataset):
-        # randomly split data into 10 parts
-        # rotate each part to be used as testing 1x
-        # call learn, classify, etc.
+    # array to hold 10 randomly selected groups from the dataset
+    dataChunks = [None] * 10
+    numRows = math.floor(cleanDataset.shape[0]/10)
+    tempDataset = cleanDataset
+
+    for i in range(9):
+        # randomly select 1/10 of the dataset, put it in the array
+        chunk = tempDataset.sample(n=numRows)
+        print("chunk sample size for " + str(i) + ": " + str(chunk.shape[0]))
+        dataChunks[i] = chunk
+
+        # rest of dataset without selected chunk
+        tempDataset = tempDataset.drop(chunk.index)
+
+    print("size of remaining data: " + str(tempDataset.shape[0]))
+    # the last chunk might be slightly different size if dataset size is not divisible by 10
+    dataChunks[9] = tempDataset
+
+    # rotate each part to be used as testing 1x
+    # call learn, classify, etc. on each version of the train/test data
+    return dataChunks
 
 main()
