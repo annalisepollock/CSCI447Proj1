@@ -111,7 +111,7 @@ def cleanData(dataOriginal, dataFrame, noise):
                 # fill na's with the rounded mean of the column (whole numbers will work w/ ints and floats)
                 dataFrame = dataRemovedNullCols.fillna(round(dataRemovedNullCols.mean()))
 
-    return dataFrame
+    return dataFrame, classColumnName
 
 def addNoise(dataSet, classColumnName):
     #calculate 10% of columns
