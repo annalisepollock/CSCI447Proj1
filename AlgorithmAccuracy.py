@@ -2,14 +2,15 @@ import ClassificationInfo
 
 class AlgorithmAccuracy:
     def __init__(self, stats):
-        if not isinstance(stats, ClassificationInfo):
+        print(type(stats))
+        if not isinstance(stats, ClassificationInfo.ClassificationInfo):
             raise TypeError('stats must be an instance of ClassificationInfo')
         self.stats = stats
         #calculate precision, recall, f1
         self.precision = (self.stats.TP)/(self.stats.TP + self.stats.FP)
-        self.recall = (self.calculateLossstats.TP)/(self.stats.TP + self.stats.FN)
+        self.recall = (self.stats.TP)/(self.stats.TP + self.stats.FN)
         self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
-        self.loss = self.calculateLoss(stats)
+        self.loss = self.calculateLoss()
 
     def confusionMatrix(self):
         return {"TP": self.stats.TP, "FP": self.stats.FP, "FN": self.stats.FN, "TN": self.stats.TN}
@@ -34,4 +35,4 @@ class AlgorithmAccuracy:
     def print(self):
         print("F1: " + str(self.f1))
         print("Loss: " + str(self.loss))
-        print("Confusion Matrix: " + str(self.confusionMatrix().to_string()))
+        print("Confusion Matrix: " + str(self.confusionMatrix()))

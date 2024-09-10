@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import Learner
 import AlgorithmAccuracy
+import ClassificationInfo
 from ucimlrepo import fetch_ucirepo
 
 warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
@@ -57,6 +58,16 @@ def main():
     breastCancerFolds = crossValidation(breastCancerClean)
     breastCancerF1 = []
     breastCancerLoss = []
+
+    for fold in crossValidation(breastCancerClean):
+        train = breastCancerClean.drop(fold.index)
+        learner = Learner.Learner(train, 'Class')
+        classifications = learner.classify(fold)
+        stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
+        stats.print()
+        print()
+        breastCancerF1.append(stats.getF1())
+        breastCancerLoss.append(stats.getLoss())
 
     #glassFolds = crossValidation(glassClean)
 
