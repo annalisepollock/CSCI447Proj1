@@ -4,6 +4,8 @@ import warnings
 from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
+from xarray.core.missing import ffill
+
 import Learner
 from ucimlrepo import fetch_ucirepo
 from sklearn.preprocessing import OneHotEncoder
@@ -14,56 +16,50 @@ def main():
     # FETCH DATASETS
     breastCancerData =  fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
-    breastCancerColumnTypes = dict(zip(breastCancerData.variables['name'], breastCancerData.variables['type']))
 
     glassData = fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
-    glassColumnTypes = dict(zip(glassData.variables['name'], glassData.variables['type']))
 
     irisData = fetch_ucirepo(id=53)
     irisDataFrame = pd.DataFrame(irisData.data.original)
-    irisColumnTypes = dict(zip(irisData.variables['name'], irisData.variables['type']))
+
+    soybeanData = fetch_ucirepo(id=91)
+    soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
+
+    votingData = fetch_ucirepo(id=105)
+    votingDataFrame = pd.DataFrame(votingData.data.original)
     # END FETCH DATASETS
 
     # BREAST CANCER DATASET CLEANING
-    # curated data cleaning: breast cancer data
+    #print("DIRTY DATA: \n" + breastCancerDataFrame.to_string())
     breastCancerNoId = breastCancerDataFrame.drop(columns=['Sample_code_number']) # remove ID column
 
     breastCancerClean = cleanData(breastCancerData, breastCancerNoId, False)
     breastCancerClean['Bare_nuclei'] = breastCancerClean['Bare_nuclei'].astype(int)
     # END BREAST CANCER DATASET CLEANING
 
-    # GLASS DATASET CLEANING/BINNING
+    # GLASS DATASET CLEANING
     glassDataFrame = glassDataFrame.drop(columns=['Id_number'])
+    glassClean = cleanData(glassData, glassDataFrame, False)
+    # END GLASS DATASET CLEANING
 
-    # binning, if continuous/categorical
-    for columnName in glassDataFrame.columns:
-        # TO-DO: ignore Class column
-        # if continuous, make categorical (5 categories total)
-        if glassColumnTypes[columnName] == 'Continuous':
-            # split dataset into 5 equal-width bins
-            binVals = np.linspace(glassDataFrame[columnName].min(), glassDataFrame[columnName].max(), 6)
-            binLabels = ['A', 'B', 'C', 'D', 'E']
+    # IRIS DATASET CLEANING
+    irisClean = cleanData(irisData, irisDataFrame, False)
+    # END IRIS DATASET CLEANING
 
-            # assign column vals to a bin
-            glassDataFrame[columnName] = pd.cut(glassDataFrame[columnName], bins = binVals, labels = binLabels, include_lowest = True)
-            # set 'type' to Categorical
-            glassColumnTypes[columnName] = 'Categorical'
+    # SOYBEAN DATASET CLEANING
+    soybeanClean = cleanData(soybeanData, soybeanDataFrame, False)
+    # END SOYBEAN DATASET CLEANING
 
-        if glassColumnTypes[columnName] == 'Categorical':
-            # one-hot encoding
-            encoder = OneHotEncoder()
-
-            # encode all columns except for the class column
-            glassColumnsToEncode = glassDataFrame.iloc[:, :-1]
-
-            glassDataEncoded = pd.DataFrame(encoder.fit_transform(glassColumnsToEncode).toarray())
-            glassClean = pd.concat([glassDataEncoded, glassDataFrame.iloc[:, -1]], axis=1)
-    # END GLASS DATASET CLEANING/BINNING
+    # VOTING DATASET CLEANING
+    print("DIRTY DATA: \n" + votingDataFrame.to_string())
+    votingClean = cleanData(votingData, votingDataFrame, False)
+    print("CLEAN DATA: \n" + votingClean.to_string())
+    # END VOTING DATASET CLEANING
 
     # CROSS-VALIDATION, TRAINING + TESTING
-    breastCancerFolds = crossValidation(breastCancerClean)
-    glassFolds = crossValidation(glassClean)
+    #breastCancerFolds = crossValidation(breastCancerClean)
+    #glassFolds = crossValidation(glassClean)
 
     # f1 = []
     # 0-1 loss = []
@@ -76,27 +72,47 @@ def main():
     # f1.append(stats.getF1())
     # 0-1 loss.append(stats.getLoss())
 
-def cleanData(dataOriginal, dataSet, noise, classColumnName):
-    dataVariables = pd.DataFrame(dataOriginal.variables)
+def cleanData(dataOriginal, dataFrame, noise):
+    #dataVariables = pd.DataFrame(dataOriginal.variables)
+    classColumnName = dataOriginal.variables.loc[dataOriginal.variables['role'] == 'Target', 'name'].values[0]
+    columnTypes = dict(zip(dataOriginal.variables['name'], dataOriginal.variables['type']))
 
+    # ADDRESS NULL VALUES WHERE COLUMNS/ROWS NEED TO BE REMOVED
+    # If true class is unknown, drop the row
+    dataFrame = dataFrame.dropna(subset=[classColumnName])
+    # Drop any rows where all values are null
+    dataRemovedNullRows = dataFrame.dropna(how = 'all')
+    # Columns must have 70% of their values for rows to remain in dataset
+    dataRemovedNullCols = dataRemovedNullRows.dropna(axis=1, thresh = math.floor(0.70*dataFrame.shape[0]))
+
+    # ADD NOISE
     if(noise):
         addNoise(dataSet, classColumnName)
 
-    # Remove any rows where all values are null
-    dataRemovedNullRows = dataSet.dropna(how = 'all')
+    # BINNING OF CONTINUOUS/CATEGORICAL COLUMNS
+    for columnName in dataFrame.columns:
+        columnRole = dataOriginal.variables.loc[dataOriginal.variables['name'] == columnName, 'role'].values[0]
 
-    # Columns must have 70% of their values for rows to remain in dataset
-    dataRemovedNullCols = dataRemovedNullRows.dropna(axis=1, thresh = math.floor(0.70*dataSet.shape[0]))
+        # Ignore class column (target)
+        if columnRole != 'Target':
+            # if continuous, make categorical (5 categories total)
+            if columnTypes[columnName] == 'Continuous':
+                # split dataset into 5 equal-width bins
+                binVals = np.linspace(dataFrame[columnName].min(), dataFrame[columnName].max(), 6)
+                binLabels = ['A', 'B', 'C', 'D', 'E']
 
-    # Iterate through columns; if numerical, fillna with mean
-    # if categorical/binary, use forward fill/backfill
-    # round values to nearest int so that na's can be filled with this value regardless if continuous or discrete
-    dataSetNoNull = dataRemovedNullCols.fillna(round(dataRemovedNullCols.mean()))
+                # assign column vals to a bin
+                dataFrame[columnName] = pd.cut(dataFrame[columnName], bins = binVals, labels = binLabels, include_lowest = True)
+                # set 'type' to Categorical
+                columnTypes[columnName] = 'Categorical'
 
-    #print(dataSetNoNull.to_string())
-    # Continuous attributes - discretize
+            if columnTypes[columnName] == 'Categorical':
+                dataFrame = dataRemovedNullCols.fillna(method='ffill')
+            else:
+                # fill na's with the rounded mean of the column (whole numbers will work w/ ints and floats)
+                dataFrame = dataRemovedNullCols.fillna(round(dataRemovedNullCols.mean()))
 
-    return dataSetNoNull
+    return dataFrame
 
 def addNoise(dataSet, classColumnName):
     #calculate 10% of columns
