@@ -4,11 +4,8 @@ import warnings
 from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
-from xarray.core.missing import ffill
-
 import Learner
 from ucimlrepo import fetch_ucirepo
-from sklearn.preprocessing import OneHotEncoder
 
 warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
 
