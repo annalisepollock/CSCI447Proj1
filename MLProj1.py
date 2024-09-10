@@ -1,9 +1,14 @@
 import math
+import random
+import warnings
+from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
 import Learner
 from ucimlrepo import fetch_ucirepo
 from sklearn.preprocessing import OneHotEncoder
+
+warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
 
 def main():
     # FETCH DATASETS
@@ -75,7 +80,7 @@ def cleanData(dataOriginal, dataSet, noise, classColumnName):
     dataVariables = pd.DataFrame(dataOriginal.variables)
 
     if(noise):
-        addNoise(dataSet)
+        addNoise(dataSet, classColumnName)
 
     # Remove any rows where all values are null
     dataRemovedNullRows = dataSet.dropna(how = 'all')
@@ -93,8 +98,18 @@ def cleanData(dataOriginal, dataSet, noise, classColumnName):
 
     return dataSetNoNull
 
-def addNoise(dataSet):
-    # add noise to the data set
+def addNoise(dataSet, classColumnName):
+    #calculate 10% of columns
+    numCols = int(0.1 * len(dataSet.columns))
+    #dont mix class column
+    columns = dataSet.columns.drop(classColumnName).to_list()
+    # Randomly select 10% of the columns
+    selectedColumns = random.sample(columns, numCols)
+    #grab data from those columns
+    for col in selectedColumns:
+        newCol = np.random.permutation(dataSet[col].values)
+        dataSet[col] = newCol
+
     return dataSet
 
 def crossValidation(cleanDataset):
