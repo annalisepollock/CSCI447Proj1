@@ -5,6 +5,7 @@ from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
 import Learner
+import AlgorithmAccuracy
 from ucimlrepo import fetch_ucirepo
 
 warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
@@ -54,8 +55,11 @@ def main():
     print("CLEAN DATA: \n" + votingClean.to_string())
     # END VOTING DATASET CLEANING
 
-    # CROSS-VALIDATION, TRAINING + TESTING
-    #breastCancerFolds = crossValidation(breastCancerClean)
+    #CROSS-VALIDATION, TRAINING + TESTING
+    breastCancerFolds = crossValidation(breastCancerClean)
+    breastCancerF1 = []
+    breastCancerLoss = []
+
     #glassFolds = crossValidation(glassClean)
 
     # f1 = []
@@ -84,7 +88,7 @@ def cleanData(dataOriginal, dataFrame, noise):
 
     # ADD NOISE
     if(noise):
-        addNoise(dataSet, classColumnName)
+        addNoise(dataFrame, classColumnName)
 
     # BINNING OF CONTINUOUS/CATEGORICAL COLUMNS
     for columnName in dataFrame.columns:
