@@ -15,6 +15,8 @@ class ClassificationInfo:
 
     def addTrueClass(self, trueClass):
         self.trueClasses.append(trueClass)
+    
+    #increment confusion as classifications are made
     def addConfusion(self, Accuracy):
         if Accuracy == Accuracy.TP:
             self.TP += 1
