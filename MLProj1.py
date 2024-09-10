@@ -60,8 +60,16 @@ def main():
     breastCancerFolds = crossValidation(breastCancerClean)
     glassFolds = crossValidation(glassClean)
 
-    #learner = Learner.Learner(data, 10)
-    print("Done")
+    # f1 = []
+    # 0-1 loss = []
+    # for each fold:
+    # train = data.drop(fold)
+    # learner = Leaner.Learner(train, 'class')
+    # classifications = learner.classify(fold)
+    # stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
+    # stats.print()
+    # f1.append(stats.getF1())
+    # 0-1 loss.append(stats.getLoss())
 
 def cleanData(dataOriginal, dataSet, noise, classColumnName):
     dataVariables = pd.DataFrame(dataOriginal.variables)
@@ -111,5 +119,4 @@ def crossValidation(cleanDataset):
     # rotate each part to be used as testing 1x
     # call learn, classify, etc. on each version of the train/test data
     return dataChunks
-
 main()
