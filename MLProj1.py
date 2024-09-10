@@ -50,9 +50,7 @@ def main():
     # END SOYBEAN DATASET CLEANING
 
     # VOTING DATASET CLEANING
-    print("DIRTY DATA: \n" + votingDataFrame.to_string())
     votingClean = cleanData(votingData, votingDataFrame, False)
-    print("CLEAN DATA: \n" + votingClean.to_string())
     # END VOTING DATASET CLEANING
 
     #CROSS-VALIDATION, TRAINING + TESTING
@@ -138,13 +136,11 @@ def crossValidation(cleanDataset):
     for i in range(9):
         # randomly select 1/10 of the dataset, put it in the array
         chunk = tempDataset.sample(n=numRows)
-        #print("chunk sample size for " + str(i) + ": " + str(chunk.shape[0]))
         dataChunks[i] = chunk
 
         # rest of dataset without selected chunk
         tempDataset = tempDataset.drop(chunk.index)
 
-    #print("size of remaining data: " + str(tempDataset.shape[0]))
     # the last chunk might be slightly different size if dataset size is not divisible by 10
     dataChunks[9] = tempDataset
 
