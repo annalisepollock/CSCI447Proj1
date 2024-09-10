@@ -1,13 +1,13 @@
 import pandas as pd
 class Class:
-    def __init__(self, name, totalVals, fullData):
+    def __init__(self, name, totalVals):
         self.name = name
         self.data = pd.DataFrame()
         self.vals = 0
         self.totalVals = totalVals
         self.attributes = {}
-        self.fullData = fullData
 
+    # add a row of data that belongs to class
     def add_data(self, data):
         self.data = self.data.append(data)
         self.vals += 1
@@ -20,15 +20,18 @@ class Class:
 
     def createAttributes(self):
         numAttributes = self.data.shape[1] #number of attributes
-        total = self.data.shape[0]
-        #dont use unnecessary columns 
+        total = self.data.shape[0] #total number of rows
+
+        #loop through attributes and calculate probabilities
         for columnName, columnData in self.data.iteritems():
-            attributeNum = self.fullData[columnName].nunique() #number of unique attributes
-            columnInfo = columnData.value_counts()
-            self.attributes[columnName] = {}
+            columnInfo = columnData.value_counts() # pull value counts for each attribute possibility
+            self.attributes[columnName] = {} #for each attribute create a dictionary with possible values 
+
             for value, count in columnInfo.iteritems():
+                # calculate probability of each attribute value
                 self.attributes[columnName][value] = (count + 1) /(numAttributes + total)
     
+    #calculate probability that example belongs to class
     def classify(self, example):
         #classify the example
         prob = self.vals / self.totalVals
