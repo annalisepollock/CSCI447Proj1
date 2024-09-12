@@ -231,9 +231,9 @@ def cleanData(dataOriginal, dataFrame, noise):
     # If true class is unknown, drop the row
     dataFrame = dataFrame.dropna(subset=[classColumnName])
     # Drop any rows where all values are null
-    dataRemovedNullRows = dataFrame.dropna(how = 'all')
+    dataFrame = dataFrame.dropna(how = 'all')
     # Columns must have 70% of their values for rows to remain in dataset
-    dataRemovedNullCols = dataRemovedNullRows.dropna(axis=1, thresh = math.floor(0.70*dataFrame.shape[0]))
+    dataFrame = dataFrame.dropna(axis=1, thresh = math.floor(0.70*dataFrame.shape[0]))
 
     # ADD NOISE
     if(noise):
@@ -247,6 +247,7 @@ def cleanData(dataOriginal, dataFrame, noise):
         if columnRole != 'Target':
             # if continuous, make categorical (5 categories total)
             if columnTypes[columnName] == 'Continuous':
+                print(columnName + " IS CONTINUOUS")
                 # split dataset into 5 equal-width bins
                 binVals = np.linspace(dataFrame[columnName].min(), dataFrame[columnName].max(), 6)
                 binLabels = ['A', 'B', 'C', 'D', 'E']
@@ -257,11 +258,10 @@ def cleanData(dataOriginal, dataFrame, noise):
                 columnTypes[columnName] = 'Categorical'
 
             if columnTypes[columnName] == 'Categorical':
-                dataFrame = dataRemovedNullCols.fillna(method='ffill')
+                dataFrame = dataFrame.fillna(method='ffill')
             else:
                 # fill na's with the rounded mean of the column (whole numbers will work w/ ints and floats)
-                dataFrame = dataRemovedNullCols.fillna(round(dataRemovedNullCols.mean()))
-
+                dataFrame = dataFrame.fillna(round(dataFrame.mean()))
     return dataFrame, classColumnName
 
 def addNoise(dataSet, classColumnName):
