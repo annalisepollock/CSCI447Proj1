@@ -5,15 +5,9 @@ class AlgorithmAccuracy:
         if not isinstance(stats, ClassificationInfo.ClassificationInfo):
             raise TypeError('stats must be an instance of ClassificationInfo')
         self.stats = stats
-        print("True Positives", stats.TP)
-        print("True Negatives", stats.TN)
-        print("False Positives", stats.FP)
-        print("False Negatives", stats.FN)
         #calculate precision, recall, f1
         self.precision = (self.stats.TP)/(self.stats.TP + self.stats.FP)
         self.recall = (self.stats.TP)/(self.stats.TP + self.stats.FN)
-        print("Precision", self.precision)
-        print("Recall", self.recall)
 
         self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
         self.loss = self.calculateLoss()

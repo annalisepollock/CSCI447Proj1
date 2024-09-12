@@ -10,13 +10,16 @@ class Accuracy(Enum):
 
 class Learner: 
 
-    def __init__(self, data, className):
+    def __init__(self, data, className, classification):
+        if not isinstance(classification, ClassificationInfo.ClassificationInfo):
+            raise TypeError('classification must be an instance of ClassificationInfo')
         self.data = data
         self.size = data.shape[0]
         self.classPlace = className # send in the name of the class column or the index
         self.classesData = {}
+        self.classification = classification
         self.train()
-    
+
     def train(self):
         #loop through data and split into classes
         for index, row in self.data.iterrows():
@@ -31,7 +34,6 @@ class Learner:
             self.classesData[c].createAttributes()
 
     def classify(self, testData):
-        classification = ClassificationInfo.ClassificationInfo()
 
         #loop through test data and classify
         for index, row in testData.iterrows(): 
@@ -46,10 +48,8 @@ class Learner:
                     predClass = c
 
             #add classification to classification info
-            classification.addConfusion(self.accuracy(trueClass, predClass))
-            classification.addTrueClass([trueClass, predClass])
-
-        return classification
+            self.classification.addConfusion(self.accuracy(trueClass, predClass))
+            self.classification.addTrueClass([trueClass, predClass])
     
     def accuracy(self, trueClass, assignedClass):
         classNames = list(self.classesData.keys())

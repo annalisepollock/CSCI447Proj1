@@ -33,14 +33,19 @@ class Class:
     
     #calculate probability that example belongs to class
     def classify(self, example):
+        numAttributes = self.data.shape[1] #number of attributes
+        total = self.data.shape[0]
         #classify the example
-        prob = self.vals / self.totalVals
+        prob = self.getProbability()
         atributeProb = 1
+        #multiply the conditional probability of each attribute value for this class
         for columnName, value in example.iteritems():
             if value in self.attributes[columnName]:
                 atributeProb *= self.attributes[columnName][value]
+
+            #if value not present in class multiply with the assumption the count is 0
             else:
-                atributeProb *= 1
+                atributeProb *= 1 / (numAttributes + total)
         prob *= atributeProb
         return prob
     def printAttributes(self):
