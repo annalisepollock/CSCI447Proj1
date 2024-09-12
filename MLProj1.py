@@ -1,7 +1,7 @@
 import math
 import random
 import warnings
-from pandas.core.common import SettingWithCopyWarning
+#from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
 import Learner
@@ -9,7 +9,7 @@ import AlgorithmAccuracy
 import ClassificationInfo
 from ucimlrepo import fetch_ucirepo
 
-warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
+#warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
 
 def main():
     # FETCH DATASETS
@@ -30,13 +30,12 @@ def main():
     # END FETCH DATASETS
 
     # BREAST CANCER DATASET CLEANING
-    #print("DIRTY DATA: \n" + breastCancerDataFrame.to_string())
     breastCancerNoId = breastCancerDataFrame.drop(columns=['Sample_code_number']) # remove ID column
 
     breastCancerClean = cleanData(breastCancerData, breastCancerNoId, False)
     breastCancerNoise = cleanData(breastCancerData, breastCancerNoId, True)
-    breastCancerClean['Bare_nuclei'] = breastCancerClean['Bare_nuclei'].astype(int)
-    breastCancerNoise['Bare_nuclei'] = breastCancerNoise['Bare_nuclei'].astype(int)
+    breastCancerClean[0]['Bare_nuclei'] = breastCancerClean[0]['Bare_nuclei'].astype(int)
+    breastCancerNoise[0]['Bare_nuclei'] = breastCancerNoise[0]['Bare_nuclei'].astype(int)
     # END BREAST CANCER DATASET CLEANING
 
     # GLASS DATASET CLEANING
@@ -60,9 +59,9 @@ def main():
     votingNoise = cleanData(votingData, votingDataFrame, True)
     # END VOTING DATASET CLEANING
 
-    #CROSS-VALIDATION, TRAINING + TESTING
-    breastCancerFolds = crossValidation(breastCancerClean)
-    breastCancerNoiseFolds = crossValidation(breastCancerNoise)
+    # CROSS-VALIDATION, TRAINING + TESTING
+    breastCancerFolds = crossValidation(breastCancerClean[0])
+    breastCancerNoiseFolds = crossValidation(breastCancerNoise[0])
 
     breastCancerF1 = []
     breastCancerLoss = []
@@ -71,7 +70,7 @@ def main():
     breastCancerNoiseLoss = []
 
     for fold in breastCancerFolds:
-        train = breastCancerClean.drop(fold.index)
+        train = breastCancerClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -81,7 +80,7 @@ def main():
         breastCancerLoss.append(stats.getLoss())
 
     for fold in breastCancerNoiseFolds:
-        train = breastCancerNoise.drop(fold.index)
+        train = breastCancerNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -92,8 +91,8 @@ def main():
     
     #FINISHED BREAST CANCER DATASET
     
-    glassFolds = crossValidation(glassClean)
-    glassNoiseFolds = crossValidation(glassNoise)
+    glassFolds = crossValidation(glassClean[0])
+    glassNoiseFolds = crossValidation(glassNoise[0])
 
     glassF1 = []
     glassLoss = []
@@ -102,7 +101,7 @@ def main():
     glassNoiseLoss = []
 
     for fold in glassFolds:
-        train = glassClean.drop(fold.index)
+        train = glassClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -112,7 +111,7 @@ def main():
         glassLoss.append(stats.getLoss())
 
     for fold in glassNoiseFolds:
-        train = glassNoise.drop(fold.index)
+        train = glassNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -122,8 +121,8 @@ def main():
         glassNoiseLoss.append(stats.getLoss())
 
     #FINISHED GLASS DATASET
-    irisFolds = crossValidation(irisClean)
-    irisNoiseFolds = crossValidation(irisNoise)
+    irisFolds = crossValidation(irisClean[0])
+    irisNoiseFolds = crossValidation(irisNoise[0])
 
     irisF1 = []
     irisLoss = []
@@ -132,7 +131,7 @@ def main():
     irisNoiseLoss = []
 
     for fold in irisFolds:
-        train = irisClean.drop(fold.index)
+        train = irisClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -142,7 +141,7 @@ def main():
         irisLoss.append(stats.getLoss())
 
     for fold in irisNoiseFolds:
-        train = irisNoise.drop(fold.index)
+        train = irisNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -152,8 +151,8 @@ def main():
         irisNoiseLoss.append(stats.getLoss())
     #FINISHED IRIS DATASET
         
-    soybeanFolds = crossValidation(soybeanClean)
-    soybeanNoiseFolds = crossValidation(soybeanNoise)
+    soybeanFolds = crossValidation(soybeanClean[0])
+    soybeanNoiseFolds = crossValidation(soybeanNoise[0])
 
     soybeanF1 = []
     soybeanLoss = []
@@ -162,7 +161,7 @@ def main():
     soybeanNoiseLoss = []
 
     for fold in soybeanFolds:
-        train = soybeanClean.drop(fold.index)
+        train = soybeanClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -172,7 +171,7 @@ def main():
         soybeanLoss.append(stats.getLoss())
 
     for fold in soybeanNoiseFolds:
-        train = soybeanNoise.drop(fold.index)
+        train = soybeanNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -182,8 +181,8 @@ def main():
         soybeanNoiseLoss.append(stats.getLoss())
     
     #FINISHED SOYBEAN DATASET
-    votingFolds = crossValidation(votingClean)
-    votingNoiseFolds = crossValidation(votingNoise)
+    votingFolds = crossValidation(votingClean[0])
+    votingNoiseFolds = crossValidation(votingNoise[0])
 
     votingF1 = []
     votingLoss = []
@@ -192,7 +191,7 @@ def main():
     votingNoiseLoss = []
 
     for fold in votingFolds:
-        train = votingClean.drop(fold.index)
+        train = votingClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
@@ -202,7 +201,7 @@ def main():
         votingLoss.append(stats.getLoss())
 
     for fold in votingNoiseFolds:
-        train = votingNoise.drop(fold.index)
+        train = votingNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class')
         classifications = learner.classify(fold)
         stats = AlgorithmAccuracy.AlgorithmAccuracy(classifications)
