@@ -1,7 +1,9 @@
 import math
 import random
 import warnings
-from pandas.core.common import SettingWithCopyWarning
+from types import NoneType
+
+#from pandas.core.common import SettingWithCopyWarning
 import pandas as pd
 import numpy as np
 import Learner
@@ -9,7 +11,7 @@ import AlgorithmAccuracy
 import ClassificationInfo
 from ucimlrepo import fetch_ucirepo
 
-warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
+#warnings.filterwarnings('ignore', category=SettingWithCopyWarning)
 
 def main():
     # FETCH DATASETS
@@ -63,8 +65,8 @@ def main():
 
     
     # CROSS-VALIDATION, TRAINING + TESTING
-    breastCancerFolds = crossValidation(breastCancerClean[0])
-    breastCancerNoiseFolds = crossValidation(breastCancerNoise[0])
+    breastCancerFolds = crossValidation(breastCancerClean[0], breastCancerClean[1])
+    breastCancerNoiseFolds = crossValidation(breastCancerNoise[0], breastCancerNoise[1])
 
     breastCancerClassification = ClassificationInfo.ClassificationInfo()
     breastCancerNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -92,8 +94,8 @@ def main():
     
     #FINISHED BREAST CANCER DATASET
     
-    glassFolds = crossValidation(glassClean[0])
-    glassNoiseFolds = crossValidation(glassNoise[0])
+    glassFolds = crossValidation(glassClean[0], glassClean[1])
+    glassNoiseFolds = crossValidation(glassNoise[0], glassNoise[1])
 
     glassClassification = ClassificationInfo.ClassificationInfo()
     glassNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -123,8 +125,8 @@ def main():
 
     #FINISHED GLASS DATASET
 
-    irisFolds = crossValidation(irisClean[0])
-    irisNoiseFolds = crossValidation(irisNoise[0])
+    irisFolds = crossValidation(irisClean[0], irisClean[1])
+    irisNoiseFolds = crossValidation(irisNoise[0], irisNoise[1])
 
     irisClassification = ClassificationInfo.ClassificationInfo()
     irisNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -152,8 +154,8 @@ def main():
     print()
     #FINISHED IRIS DATASET
     
-    soybeanFolds = crossValidation(soybeanClean[0])
-    soybeanNoiseFolds = crossValidation(soybeanNoise[0])
+    soybeanFolds = crossValidation(soybeanClean[0], soybeanClean[1])
+    soybeanNoiseFolds = crossValidation(soybeanNoise[0], soybeanNoise[1])
 
     soybeanClassification = ClassificationInfo.ClassificationInfo()
     soybeanNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -181,8 +183,8 @@ def main():
     print()
     #FINISHED SOYBEAN DATASET
 
-    votingFolds = crossValidation(votingClean[0])
-    votingNoiseFolds = crossValidation(votingNoise[0])
+    votingFolds = crossValidation(votingClean[0], votingClean[1])
+    votingNoiseFolds = crossValidation(votingNoise[0], votingNoise[1])
 
     votingClassification = ClassificationInfo.ClassificationInfo()
     votingNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -300,7 +302,7 @@ def cleanData(dataOriginal, dataFrame, noise):
                 columnTypes[columnName] = 'Categorical'
 
             if columnTypes[columnName] == 'Categorical':
-                dataFrame = dataFrame.fillna(method='ffill')
+                dataFrame = dataFrame.ffill()
             else:
                 # fill na's with the rounded mean of the column (whole numbers will work w/ ints and floats)
                 dataFrame = dataFrame.fillna(round(dataFrame[columnName].mean()))
@@ -320,24 +322,47 @@ def addNoise(dataSet, classColumnName):
 
     return dataSet
 
-def crossValidation(cleanDataset):
-    # array to hold 10 randomly selected groups from the dataset
+def crossValidation(cleanDataset, classColumn):
+    # 10-fold cross validation with stratification of classes
+    print("Running Cross Validation with Stratification of Classes...")
     dataChunks = [None] * 10
-    numRows = math.floor(cleanDataset.shape[0]/10)
-    tempDataset = cleanDataset
+    classes = np.unique(cleanDataset[classColumn])
+    dataByClass = dict()
 
-    for i in range(9):
-        # randomly select 1/10 of the dataset, put it in the array
-        chunk = tempDataset.sample(n=numRows)
-        dataChunks[i] = chunk
+    for uniqueVal in classes:
+        # Subset data based on unique class values
+        classSubset = cleanDataset[cleanDataset[classColumn] == uniqueVal]
+        print("Creating a subset of data for class " + str(uniqueVal) + " with size of " + str(classSubset.size))
+        dataByClass[uniqueVal] = classSubset
 
-        # rest of dataset without selected chunk
-        tempDataset = tempDataset.drop(chunk.index)
+        numRows = math.floor(classSubset.shape[0] / 10) # of class instances per fold
 
-    # the last chunk might be slightly different size if dataset size is not divisible by 10
-    dataChunks[9] = tempDataset
+        for i in range(9):
+            classChunk = classSubset.sample(n=numRows)
+            print("Number of values for class " + str(uniqueVal), " in fold " + str(i+1) + " is: " + str(classChunk.shape[0]))
+            if dataChunks[i] is None:
+                dataChunks[i] = classChunk
+            else:
+                dataChunks[i] = pd.concat([dataChunks[i], classChunk])
 
-    # rotate each part to be used as testing 1x
-    # call learn, classify, etc. on each version of the train/test data
+            classSubset = classSubset.drop(classChunk.index)
+
+        # the last chunk might be slightly different size if dataset size is not divisible by 10
+        print("Number of values for class " + str(uniqueVal), " in fold " + str(10) + " is: " + str(classSubset.shape[0]))
+        dataChunks[9] = pd.concat([dataChunks[9], classSubset])
+
+    for i in range(len(dataChunks)):
+        print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
+
+    # for i in range(9):
+    #     # randomly select 1/10 of the dataset, put it in the array
+    #     chunk = tempDataset.sample(n=numRows)
+    #     dataChunks[i] = chunk
+    #
+    #     # rest of dataset without selected chunk
+    #     tempDataset = tempDataset.drop(chunk.index)
+    #
+    # # rotate each part to be used as testing 1x
+    # # call learn, classify, etc. on each version of the train/test data
     return dataChunks
 main()
