@@ -210,6 +210,44 @@ def main():
     print()
     
     #FINISHED VOTING DATASET
+
+    # PLOTS
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # Categories for the x-axis
+    categories = ['Noise', 'No Noise']
+
+    # F1 score and 0-1 loss for each category
+    breastCancerF1 = [breastCancerStats.getF1(), breastCancerNoiseStats.getF1()]  # Example values
+    breastCancerLoss = [breastCancerStats.getLoss(), breastCancerNoiseStats.getLoss()]  # Example values
+
+    # Set width for bars
+    bar_width = 0.35
+
+    # Create an array for the x-axis
+    x = np.arange(len(categories))
+
+    # Create the figure and axis
+    fig, ax = plt.subplots()
+
+    # Plot F1 score bars
+    bars_f1 = ax.bar(x - bar_width / 2, breastCancerF1, bar_width, label='F1 Score', color='blue')
+
+    # Plot 0-1 loss bars
+    bars_loss = ax.bar(x + bar_width / 2, breastCancerLoss, bar_width, label='0-1 Loss', color='orange')
+
+    # Add labels, title, and legend
+    ax.set_xlabel('Category')
+    ax.set_ylabel('Scores')
+    ax.set_title('Breast Cancer Accuracy States with Noise vs No Noise')
+    ax.set_xticks(x)
+    ax.set_xticklabels(categories)
+    ax.legend()
+
+    # Display the plot
+    plt.show()
+    # END PLOTS
     f1BreastCancer = [['BreastCancer', breastCancerStats.getF1], ['BreastCancerNoise', breastCancerNoiseStats.getF1]]
     lossBreastCancer = [['BreastCancer', breastCancerStats.getLoss], ['BreastCancerNoise', breastCancerNoiseStats.getLoss]]
 
