@@ -37,4 +37,3 @@ class ClassificationInfo:
         return self.TN
     def getTrueClasses(self): 
         return self.trueClasses
-        
