@@ -1,7 +1,5 @@
 import math
 import random
-import warnings
-from types import NoneType
 import pandas as pd
 import numpy as np
 import Learner
@@ -83,6 +81,7 @@ def main():
     breastCancerFoldsAccuracy = []
     breastCancerNoiseFoldsAccuracy = []
 
+    print("CLASSIFYING BREAST CANCER DATA")
     for fold in breastCancerFolds:
         train = breastCancerClean[0].drop(fold.index)
         learner = Learner.Learner(train, breastCancerClean[1], breastCancerClassification)
@@ -107,6 +106,7 @@ def main():
     glassFoldsAccuracy = []
     glassNoiseFoldsAccuracy = []
 
+    print("CLASSIFYING GLASS DATA")
     for fold in glassFolds:
         train = glassClean[0].drop(fold.index)
         learner = Learner.Learner(train, glassClean[1], glassClassification)
@@ -132,6 +132,7 @@ def main():
     irisFoldsAccuracy = []
     irisNoiseFoldsAccuracy = []
 
+    print("CLASSIFYING IRIS DATA")
     count = 0 
     for fold in irisFolds:
         train = irisClean[0].drop(fold.index)
@@ -163,6 +164,7 @@ def main():
     soybeanFoldAccuracy = []
     soybeanNoiseFoldAccuracy = []
 
+    print("CLASSIFYING SOYBEAN DATA")
     for fold in soybeanFolds:
         train = soybeanClean[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanClassification)
@@ -187,11 +189,11 @@ def main():
     votingFoldsAccuracy = []
     votingNoiseFoldsAccuracy = []
 
+    print("CLASSIFYING VOTING DATA")
     for fold in votingFolds:
         train = votingClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class', votingClassification)
         votingFoldsAccuracy.append(learner.classify(fold))
-    
     votingStats = AlgorithmAccuracy.AlgorithmAccuracy(votingClassification)
 
     for fold in votingNoiseFolds:

@@ -60,10 +60,10 @@ class Learner:
             #add classification to classification info
             self.classification.addConfusion(self.accuracy(trueClass, predClass))
             self.classification.addTrueClass([trueClass, predClass])
-            return correct/total
         if toPrint:
             print("TOTAL CLASSIFIED CORRECT:", (correct/total))
             print()
+        return correct/total
 
     def accuracy(self, trueClass, assignedClass):
         classNames = list(self.classesData.keys())
