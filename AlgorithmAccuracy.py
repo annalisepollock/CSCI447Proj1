@@ -1,7 +1,7 @@
 import ClassificationInfo
 
 class AlgorithmAccuracy:
-    def __init__(self, stats):
+    def __init__(self, stats, numFeatures, name):
         if not isinstance(stats, ClassificationInfo.ClassificationInfo):
             raise TypeError('stats must be an instance of ClassificationInfo')
         self.stats = stats
@@ -11,6 +11,8 @@ class AlgorithmAccuracy:
 
         self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
         self.loss = self.calculateLoss()
+        self.numFeatures = numFeatures
+        self.name = name
     def confusionMatrix(self):
         return {"TP": self.stats.TP, "FP": self.stats.FP, "FN": self.stats.FN, "TN": self.stats.TN}
     
@@ -30,8 +32,12 @@ class AlgorithmAccuracy:
         return self.f1
     def getLoss(self):
         return self.loss
+    def getNumFeatures(self):
+        return self.numFeatures
     
     def print(self):
+        print("DataSet: " + self.name)
         print("F1: " + str(self.f1))
         print("Loss: " + str(self.loss))
         print("Confusion Matrix: " + str(self.confusionMatrix()))
+        print("Number of Features: " + str(self.numFeatures))

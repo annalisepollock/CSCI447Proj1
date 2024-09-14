@@ -21,7 +21,6 @@ class Class:
         return self.vals/self.totalVals
 
     def createAttributes(self):
-        numAttributes = self.data.shape[1] #number of attributes
         total = self.data.shape[0] #total number of rows
         #loop through attributes and calculate probabilities
         for columnName, columnData in self.data.items():

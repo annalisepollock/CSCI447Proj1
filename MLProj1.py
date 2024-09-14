@@ -87,14 +87,14 @@ def main():
         learner = Learner.Learner(train, breastCancerClean[1], breastCancerClassification)
         breastCancerFoldsAccuracy.append(learner.classify(fold))
 
-    breastCancerStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerClassification)
+    breastCancerStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerClassification, len(breastCancerClean[0].columns), "Breast Cancer")
 
     for fold in breastCancerNoiseFolds:
         train = breastCancerNoise[0].drop(fold.index)
         learner = Learner.Learner(train, breastCancerClean[1], breastCancerNoiseClassification)
         breastCancerNoiseFoldsAccuracy.append(learner.classify(fold))
 
-    breastCancerNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerNoiseClassification)
+    breastCancerNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerNoiseClassification, len(breastCancerClean[0].columns), "Breast Cancer Noise")
     #FINISHED BREAST CANCER DATASET
     
     glassFolds = crossValidation(glassClean[0], glassClean[1])
@@ -112,14 +112,14 @@ def main():
         learner = Learner.Learner(train, glassClean[1], glassClassification)
         glassFoldsAccuracy.append(learner.classify(fold))
 
-    glassStats = AlgorithmAccuracy.AlgorithmAccuracy(glassClassification)
+    glassStats = AlgorithmAccuracy.AlgorithmAccuracy(glassClassification, len(glassClean[0].columns), "Glass")
 
     for fold in glassNoiseFolds:
         train = glassNoise[0].drop(fold.index)
         learner = Learner.Learner(train, glassClean[1], glassNoiseClassification)
         glassNoiseFoldsAccuracy.append(learner.classify(fold))
 
-    glassNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(glassNoiseClassification)
+    glassNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(glassNoiseClassification, len(glassClean[0].columns), "Glass Noise")
 
     #FINISHED GLASS DATASET
 
@@ -144,14 +144,14 @@ def main():
         irisFoldsAccuracy.append(learner.classify(fold, count == 0))
         count += 1
     
-    irisStats = AlgorithmAccuracy.AlgorithmAccuracy(irisClassification)
+    irisStats = AlgorithmAccuracy.AlgorithmAccuracy(irisClassification, len(irisClean[0].columns), "Iris")
 
     for fold in irisNoiseFolds:
         train = irisNoise[0].drop(fold.index)
         learner = Learner.Learner(train, irisClean[1], irisNoiseClassification)
         irisFoldsAccuracy.append(learner.classify(fold))
 
-    irisNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(irisNoiseClassification)
+    irisNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(irisNoiseClassification, len(irisClean[0].columns), "Iris Noise")
 
     #FINISHED IRIS DATASET
     
@@ -170,14 +170,14 @@ def main():
         learner = Learner.Learner(train, soybeanClean[1], soybeanClassification)
         soybeanFoldAccuracy.append(learner.classify(fold))
 
-    soybeanStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanClassification)
+    soybeanStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanClassification, len(soybeanClean[0].columns), "Soybean")
    
     for fold in soybeanNoiseFolds:
         train = soybeanNoise[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanNoiseClassification)
         soybeanNoiseFoldAccuracy.append(learner.classify(fold))
     
-    soybeanNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanNoiseClassification)
+    soybeanNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanNoiseClassification, len(soybeanClean[0].columns), "Soybean Noise")
     #FINISHED SOYBEAN DATASET
 
     votingFolds = crossValidation(votingClean[0], votingClean[1])
@@ -194,14 +194,14 @@ def main():
         train = votingClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class', votingClassification)
         votingFoldsAccuracy.append(learner.classify(fold))
-    votingStats = AlgorithmAccuracy.AlgorithmAccuracy(votingClassification)
+    votingStats = AlgorithmAccuracy.AlgorithmAccuracy(votingClassification, len(votingClean[0].columns), "Voting")
 
     for fold in votingNoiseFolds:
         train = votingNoise[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class', votingNoiseClassification)
         votingNoiseFoldsAccuracy.append(learner.classify(fold))
 
-    votingNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(votingNoiseClassification)
+    votingNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(votingNoiseClassification, len(votingClean[0].columns), "Voting Noise")
  
     #FINISHED VOTING DATASET
 
