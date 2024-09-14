@@ -2,6 +2,8 @@ import math
 import random
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 import Learner
 import AlgorithmAccuracy
 import ClassificationInfo
@@ -72,8 +74,8 @@ def main():
 
     
     # CROSS-VALIDATION, TRAINING + TESTING
-    breastCancerFolds = crossValidation(breastCancerClean[0], breastCancerClean[1])
-    breastCancerNoiseFolds = crossValidation(breastCancerNoise[0], breastCancerNoise[1])
+    breastCancerFolds = crossValidation(breastCancerClean[0], breastCancerClean[1], False)
+    breastCancerNoiseFolds = crossValidation(breastCancerNoise[0], breastCancerNoise[1], False)
 
     breastCancerClassification = ClassificationInfo.ClassificationInfo()
     breastCancerNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -97,8 +99,8 @@ def main():
     breastCancerNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerNoiseClassification, len(breastCancerClean[0].columns), "Breast Cancer Noise")
     #FINISHED BREAST CANCER DATASET
     
-    glassFolds = crossValidation(glassClean[0], glassClean[1])
-    glassNoiseFolds = crossValidation(glassNoise[0], glassNoise[1])
+    glassFolds = crossValidation(glassClean[0], glassClean[1], False)
+    glassNoiseFolds = crossValidation(glassNoise[0], glassNoise[1], False)
 
     glassClassification = ClassificationInfo.ClassificationInfo()
     glassNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -123,8 +125,10 @@ def main():
 
     #FINISHED GLASS DATASET
 
-    irisFolds = crossValidation(irisClean[0], irisClean[1])
-    irisNoiseFolds = crossValidation(irisNoise[0], irisNoise[1])
+    print("CROSS VALIDATION FOR IRIS (NO NOISE)")
+    irisFolds = crossValidation(irisClean[0], irisClean[1], True)
+    print("CROSS VALIDATION FOR IRIS (NOISE)")
+    irisNoiseFolds = crossValidation(irisNoise[0], irisNoise[1], True)
 
     irisClassification = ClassificationInfo.ClassificationInfo()
     irisNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -132,7 +136,7 @@ def main():
     irisFoldsAccuracy = []
     irisNoiseFoldsAccuracy = []
 
-    print("CLASSIFYING IRIS DATA")
+    print("\nCLASSIFYING IRIS DATA")
     count = 0 
     for fold in irisFolds:
         train = irisClean[0].drop(fold.index)
@@ -155,33 +159,33 @@ def main():
 
     #FINISHED IRIS DATASET
     
-    soybeanFolds = crossValidation(soybeanClean[0], soybeanClean[1])
-    soybeanNoiseFolds = crossValidation(soybeanNoise[0], soybeanNoise[1])
+    soybeanFolds = crossValidation(soybeanClean[0], soybeanClean[1], False)
+    soybeanNoiseFolds = crossValidation(soybeanNoise[0], soybeanNoise[1], False)
 
     soybeanClassification = ClassificationInfo.ClassificationInfo()
     soybeanNoiseClassification = ClassificationInfo.ClassificationInfo()
 
-    soybeanFoldAccuracy = []
-    soybeanNoiseFoldAccuracy = []
+    soybeanFoldsAccuracy = []
+    soybeanNoiseFoldsAccuracy = []
 
     print("CLASSIFYING SOYBEAN DATA")
     for fold in soybeanFolds:
         train = soybeanClean[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanClassification)
-        soybeanFoldAccuracy.append(learner.classify(fold))
+        soybeanFoldsAccuracy.append(learner.classify(fold))
 
     soybeanStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanClassification, len(soybeanClean[0].columns), "Soybean")
    
     for fold in soybeanNoiseFolds:
         train = soybeanNoise[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanNoiseClassification)
-        soybeanNoiseFoldAccuracy.append(learner.classify(fold))
+        soybeanNoiseFoldsAccuracy.append(learner.classify(fold))
     
     soybeanNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanNoiseClassification, len(soybeanClean[0].columns), "Soybean Noise")
     #FINISHED SOYBEAN DATASET
 
-    votingFolds = crossValidation(votingClean[0], votingClean[1])
-    votingNoiseFolds = crossValidation(votingNoise[0], votingNoise[1])
+    votingFolds = crossValidation(votingClean[0], votingClean[1], False)
+    votingNoiseFolds = crossValidation(votingNoise[0], votingNoise[1], False)
 
     votingClassification = ClassificationInfo.ClassificationInfo()
     votingNoiseClassification = ClassificationInfo.ClassificationInfo()
@@ -205,16 +209,23 @@ def main():
  
     #FINISHED VOTING DATASET
 
-    # PLOTS
-    import matplotlib.pyplot as plt
-    import numpy as np
+    # PLOT DATA
+    plotData("Breast Cancer", breastCancerStats, breastCancerNoiseStats, breastCancerFoldsAccuracy, breastCancerNoiseFoldsAccuracy)
+    plotData("Glass", glassStats, glassNoiseStats, glassFoldsAccuracy, glassNoiseFoldsAccuracy)
+    plotData("Iris", irisStats, irisNoiseStats, irisFoldsAccuracy, irisNoiseFoldsAccuracy)
+    plotData("Soybean", soybeanStats, soybeanNoiseStats, soybeanFoldsAccuracy, soybeanNoiseFoldsAccuracy)
+    plotData("Voting", votingStats, votingNoiseStats, votingFoldsAccuracy, votingNoiseFoldsAccuracy)
 
+    # END PLOT DATA
+
+
+def plotData(datasetName, noNoiseStats, noiseStats, noNoiseAccuracy, NoiseAccuracy):
     # Categories for the x-axis
     categories = ['Noise', 'No Noise']
 
     # F1 score and 0-1 loss for each category
-    breastCancerF1 = [breastCancerStats.getF1(), breastCancerNoiseStats.getF1()]  # Example values
-    breastCancerLoss = [breastCancerStats.getLoss(), breastCancerNoiseStats.getLoss()]  # Example values
+    dataF1 = [noNoiseStats.getF1(), noiseStats.getF1()]  # Example values
+    dataLoss = [noNoiseStats.getLoss(), noiseStats.getLoss()]  # Example values
 
     # Set width for bars
     bar_width = 0.35
@@ -223,41 +234,44 @@ def main():
     x = np.arange(len(categories))
 
     # Create the figure and axis
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(2, 1, figsize=(10, 15))
 
     # Plot F1 score bars
-    bars_f1 = ax.bar(x - bar_width / 2, breastCancerF1, bar_width, label='F1 Score', color='blue')
+    barsF1 = ax[0].bar(x - bar_width / 2, dataF1, bar_width, label='F1 Score', color='blue')
 
     # Plot 0-1 loss bars
-    bars_loss = ax.bar(x + bar_width / 2, breastCancerLoss, bar_width, label='0-1 Loss', color='orange')
+    barsLoss = ax[0].bar(x + bar_width / 2, dataLoss, bar_width, label='0-1 Loss', color='orange')
 
     # Add labels, title, and legend
-    ax.set_xlabel('Category')
-    ax.set_ylabel('Scores')
-    ax.set_title('Breast Cancer Accuracy States with Noise vs No Noise')
-    ax.set_xticks(x)
-    ax.set_xticklabels(categories)
-    ax.legend()
+    ax[0].set_xlabel('Noise')
+    ax[0].set_ylabel('Scores')
+    ax[0].set_title(datasetName + ' Accuracy Stats with Noise vs No Noise\n(calculated using totals across 10 folds)')
+    ax[0].set_xticks(x)
+    ax[0].set_xticklabels(categories)
+    ax[0].legend()
+
+    test = pd.DataFrame(noNoiseAccuracy)
+    print(test.to_string())
+
+    lossDataFrame = pd.DataFrame({
+        'Accuracy': noNoiseAccuracy + NoiseAccuracy,
+        'Category': ['No Noise'] * len(noNoiseAccuracy) + ['Noise'] * len(NoiseAccuracy)
+    })
+    # Plot the box plots
+    sns.boxplot(data=lossDataFrame, x='Category', y='Accuracy', ax=ax[1], color='orange')
+
+    # Overlay the actual data points with jitter for better visibility
+    sns.stripplot(data=lossDataFrame, x='Category', y='Accuracy', ax=ax[1], color='black', jitter=False)
+
+    # Add labels and title
+    ax[1].set_ylabel('Accuracy')
+    ax[1].set_title('Box Plots of Loss for ' + datasetName + ' Classification')
 
     # Display the plot
+    plt.tight_layout()
+
     plt.show()
     # END PLOTS
-    f1BreastCancer = [['BreastCancer', breastCancerStats.getF1], ['BreastCancerNoise', breastCancerNoiseStats.getF1]]
-    lossBreastCancer = [['BreastCancer', breastCancerStats.getLoss], ['BreastCancerNoise', breastCancerNoiseStats.getLoss]]
-
-    f1Glass = [['Glass', glassStats.getF1], ['GlassNoise', glassNoiseStats.getF1]]
-    lossGlass = [['Glass', glassStats.getLoss], ['GlassNoise', glassNoiseStats.getLoss]]
-
-    f1Iris = [['Iris', irisStats.getF1], ['IrisNoise', irisNoiseStats.getF1]]
-    lossIris = [['Iris', irisStats.getLoss], ['IrisNoise', irisNoiseStats.getLoss]]
-
-    f1Soybean = [['Soybean', soybeanStats.getF1], ['SoybeanNoise', soybeanNoiseStats.getF1]]
-    lossSoybean = [['Soybean', soybeanStats.getLoss], ['SoybeanNoise', soybeanNoiseStats.getLoss]]
-
-    f1Voting = [['Voting', votingStats.getF1], ['VotingNoise', votingNoiseStats.getF1]]
-    lossVoting = [['Voting', votingStats.getLoss], ['VotingNoise', votingNoiseStats.getLoss]]
-
-
 
 def cleanData(dataOriginal, dataFrame, noise):
     #dataVariables = pd.DataFrame(dataOriginal.variables)
@@ -317,9 +331,10 @@ def addNoise(dataSet, classColumnName):
 
     return dataSet
 
-def crossValidation(cleanDataset, classColumn):
+def crossValidation(cleanDataset, classColumn, printSteps):
     # 10-fold cross validation with stratification of classes
-    print("Running Cross Validation with Stratification of Classes...")
+    if printSteps == True:
+        print("Running cross calidation with stratification...")
     dataChunks = [None] * 10
     classes = np.unique(cleanDataset[classColumn])
     dataByClass = dict()
@@ -327,14 +342,16 @@ def crossValidation(cleanDataset, classColumn):
     for uniqueVal in classes:
         # Subset data based on unique class values
         classSubset = cleanDataset[cleanDataset[classColumn] == uniqueVal]
-        print("Creating a subset of data for class " + str(uniqueVal) + " with size of " + str(classSubset.size))
+        if printSteps == True:
+            print("Creating a subset of data for class " + str(uniqueVal) + " with size of " + str(classSubset.size))
         dataByClass[uniqueVal] = classSubset
 
         numRows = math.floor(classSubset.shape[0] / 10) # of class instances per fold
 
         for i in range(9):
             classChunk = classSubset.sample(n=numRows)
-            print("Number of values for class " + str(uniqueVal), " in fold " + str(i+1) + " is: " + str(classChunk.shape[0]))
+            if printSteps:
+                print("Number of values for class " + str(uniqueVal), " in fold " + str(i+1) + " is: " + str(classChunk.shape[0]))
             if dataChunks[i] is None:
                 dataChunks[i] = classChunk
             else:
@@ -343,21 +360,13 @@ def crossValidation(cleanDataset, classColumn):
             classSubset = classSubset.drop(classChunk.index)
 
         # the last chunk might be slightly different size if dataset size is not divisible by 10
-        print("Number of values for class " + str(uniqueVal), " in fold " + str(10) + " is: " + str(classSubset.shape[0]))
+        if printSteps == True:
+            print("Number of values for class " + str(uniqueVal), " in fold " + str(10) + " is: " + str(classSubset.shape[0]))
         dataChunks[9] = pd.concat([dataChunks[9], classSubset])
 
-    for i in range(len(dataChunks)):
-        print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
+    if printSteps == True:
+        for i in range(len(dataChunks)):
+            print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
 
-    # for i in range(9):
-    #     # randomly select 1/10 of the dataset, put it in the array
-    #     chunk = tempDataset.sample(n=numRows)
-    #     dataChunks[i] = chunk
-    #
-    #     # rest of dataset without selected chunk
-    #     tempDataset = tempDataset.drop(chunk.index)
-    #
-    # # rotate each part to be used as testing 1x
-    # # call learn, classify, etc. on each version of the train/test data
     return dataChunks
 main()
