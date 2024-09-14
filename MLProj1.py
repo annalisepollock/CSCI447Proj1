@@ -71,6 +71,8 @@ def main():
     votingNoise = cleanData(votingData, votingDataFrame, True)
     # END VOTING DATASET CLEANING
 
+    # track dataset names and number of unique attributes per dataset
+    datasetAttributeCounts = dict()
     
     # CROSS-VALIDATION, TRAINING + TESTING
     breastCancerFolds = crossValidation(breastCancerClean[0], breastCancerClean[1], False)
@@ -88,6 +90,7 @@ def main():
         breastCancerFoldsAccuracy.append(learner.classify(fold))
 
     breastCancerStats = AlgorithmAccuracy.AlgorithmAccuracy(breastCancerClassification, len(breastCancerClean[0].columns), "Breast Cancer")
+    datasetAttributeCounts["Breast Cancer"] = breastCancerStats
 
     for fold in breastCancerNoiseFolds:
         train = breastCancerNoise[0].drop(fold.index)
@@ -113,6 +116,7 @@ def main():
         glassFoldsAccuracy.append(learner.classify(fold))
 
     glassStats = AlgorithmAccuracy.AlgorithmAccuracy(glassClassification, len(glassClean[0].columns), "Glass")
+    datasetAttributeCounts["Glass"] = glassStats
 
     for fold in glassNoiseFolds:
         train = glassNoise[0].drop(fold.index)
@@ -147,6 +151,7 @@ def main():
         count += 1
     
     irisStats = AlgorithmAccuracy.AlgorithmAccuracy(irisClassification, len(irisClean[0].columns), "Iris")
+    datasetAttributeCounts["Iris"] = irisStats
 
     for fold in irisNoiseFolds:
         train = irisNoise[0].drop(fold.index)
@@ -172,7 +177,8 @@ def main():
         soybeanFoldsAccuracy.append(learner.classify(fold))
 
     soybeanStats = AlgorithmAccuracy.AlgorithmAccuracy(soybeanClassification, len(soybeanClean[0].columns), "Soybean")
-   
+    datasetAttributeCounts["Soybean"] = soybeanStats
+
     for fold in soybeanNoiseFolds:
         train = soybeanNoise[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanNoiseClassification)
@@ -194,7 +200,9 @@ def main():
         train = votingClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class', votingClassification)
         votingFoldsAccuracy.append(learner.classify(fold))
+
     votingStats = AlgorithmAccuracy.AlgorithmAccuracy(votingClassification, len(votingClean[0].columns), "Voting")
+    datasetAttributeCounts["Voting"] = votingStats
 
     for fold in votingNoiseFolds:
         train = votingNoise[0].drop(fold.index)
@@ -204,21 +212,63 @@ def main():
     votingNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(votingNoiseClassification, len(votingClean[0].columns), "Voting Noise")
  
     #FINISHED VOTING DATASET
-    # PLOT DATA
+
+    # PLOT DATA FOR INDIVIDUAL DATASETS
     plotData("Breast Cancer", breastCancerStats, breastCancerNoiseStats, breastCancerFoldsAccuracy, breastCancerNoiseFoldsAccuracy)
     plotData("Glass", glassStats, glassNoiseStats, glassFoldsAccuracy, glassNoiseFoldsAccuracy)
     plotData("Iris", irisStats, irisNoiseStats, irisFoldsAccuracy, irisNoiseFoldsAccuracy)
     plotData("Soybean", soybeanStats, soybeanNoiseStats, soybeanFoldsAccuracy, soybeanNoiseFoldsAccuracy)
     plotData("Voting", votingStats, votingNoiseStats, votingFoldsAccuracy, votingNoiseFoldsAccuracy)
-    # END PLOT DATA
+    # END PLOT DATA FOR INDIVIDUAL DATASETS
+
+    # PLOT DATA FOR OVERALL STATS
+    # Categories for the x-axis
+    sortedDatasetsByNumAttributes = dict(sorted(datasetAttributeCounts.items(), key=lambda item: item[1].getNumFeatures()))
+    # F1 score and 0-1 loss for each category
+    dataF1 = []
+    dataLoss = []
+
+    # x-axis Labels
+    xlabels = []
+
+    for datasetName in sortedDatasetsByNumAttributes.keys():
+        dataF1.append(sortedDatasetsByNumAttributes[datasetName].getF1())
+        dataLoss.append(sortedDatasetsByNumAttributes[datasetName].getLoss())
+        xlabels.append(datasetName + " (" + str(sortedDatasetsByNumAttributes[datasetName].getNumFeatures()) + ")")
+
+    # Set width for bars
+    bar_width = 0.35
+
+    # Create an array for the x-axis
+    x = np.arange(len(sortedDatasetsByNumAttributes))
+
+    # Create the figure and axis
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # Plot F1 score bars
+    barsF1 = ax.bar(x - bar_width / 2, dataF1, bar_width, label='F1 Score', color='darkcyan')
+
+    # Plot 0-1 loss bars
+    barsLoss = ax.bar(x + bar_width / 2, dataLoss, bar_width, label='0-1 Loss', color='darkmagenta')
+
+    # Add labels, title, and legend
+    ax.set_xlabel('Dataset (# attributes)')
+    ax.set_ylabel('Scores')
+    ax.set_title('Accuracy Stats by Dataset')
+    ax.set_xticks(x)
+    ax.set_xticklabels(xlabels)
+    ax.legend()
+    # END PLOT DATA FOR OVERALL STATS
+    plt.show()
 
 def plotData(datasetName, noNoiseStats, noiseStats, noNoiseAccuracy, NoiseAccuracy):
+    # PLOT
     # Categories for the x-axis
     categories = ['Noise', 'No Noise']
 
     # F1 score and 0-1 loss for each category
-    dataF1 = [noNoiseStats.getF1(), noiseStats.getF1()]  # Example values
-    dataLoss = [noNoiseStats.getLoss(), noiseStats.getLoss()]  # Example values
+    dataF1 = [noNoiseStats.getF1(), noiseStats.getF1()]
+    dataLoss = [noNoiseStats.getLoss(), noiseStats.getLoss()]
 
     # Set width for bars
     bar_width = 0.35
@@ -227,13 +277,13 @@ def plotData(datasetName, noNoiseStats, noiseStats, noNoiseAccuracy, NoiseAccura
     x = np.arange(len(categories))
 
     # Create the figure and axis
-    fig, ax = plt.subplots(2, 1, figsize=(10, 15))
+    fig, ax = plt.subplots(2, 1, figsize=(15, 15))
 
     # Plot F1 score bars
-    barsF1 = ax[0].bar(x - bar_width / 2, dataF1, bar_width, label='F1 Score', color='blue')
+    barsF1 = ax[0].bar(x - bar_width / 2, dataF1, bar_width, label='F1 Score', color='darkcyan')
 
     # Plot 0-1 loss bars
-    barsLoss = ax[0].bar(x + bar_width / 2, dataLoss, bar_width, label='0-1 Loss', color='orange')
+    barsLoss = ax[0].bar(x + bar_width / 2, dataLoss, bar_width, label='0-1 Loss', color='darkmagenta')
 
     # Add labels, title, and legend
     ax[0].set_xlabel('Noise')
@@ -243,22 +293,21 @@ def plotData(datasetName, noNoiseStats, noiseStats, noNoiseAccuracy, NoiseAccura
     ax[0].set_xticklabels(categories)
     ax[0].legend()
 
-    test = pd.DataFrame(noNoiseAccuracy)
-    print(test.to_string())
-
+    # Combine results from noise and no noise into one long column, with labels to distinguish
     lossDataFrame = pd.DataFrame({
         'Accuracy': noNoiseAccuracy + NoiseAccuracy,
         'Category': ['No Noise'] * len(noNoiseAccuracy) + ['Noise'] * len(NoiseAccuracy)
     })
+
     # Plot the box plots
-    sns.boxplot(data=lossDataFrame, x='Category', y='Accuracy', ax=ax[1], color='orange')
+    sns.boxplot(data=lossDataFrame, x='Category', y='Accuracy', ax=ax[1], color='darkmagenta')
 
     # Overlay the actual data points with jitter for better visibility
     sns.stripplot(data=lossDataFrame, x='Category', y='Accuracy', ax=ax[1], color='black', jitter=False)
 
     # Add labels and title
-    ax[1].set_ylabel('Accuracy')
-    ax[1].set_title('Box Plots of Loss for ' + datasetName + ' Classification')
+    ax[1].set_ylabel('Loss')
+    ax[1].set_title('Box Plots of 0-1 Loss for ' + datasetName + ' Classification')
 
     # Display the plot
     plt.tight_layout()
