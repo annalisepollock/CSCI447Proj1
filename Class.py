@@ -28,7 +28,7 @@ class Class:
             self.attributes[columnName] = {} #for each attribute create a dictionary with possible values 
             for value, count in columnInfo.items():
                 # calculate probability of each attribute value
-                self.attributes[columnName][value] = (count + 1) /(len(columnInfo) + total)
+                self.attributes[columnName][value] = [(count + 1) /(len(columnInfo) + total), count]
     
     #calculate probability that example belongs to class
     def classify(self, example):
@@ -40,7 +40,7 @@ class Class:
         #multiply the conditional probability of each attribute value for this class
         for columnName, value in example.items():
             if value in self.attributes[columnName]:
-                atributeProb *= self.attributes[columnName][value]
+                atributeProb *= self.attributes[columnName][value][0]
 
             #if value not present in class multiply with the assumption the count is 0
             else:
@@ -53,5 +53,6 @@ class Class:
             print("Attribute Name", attribute)
             for value in self.attributes[attribute].keys():
                 print("\tAttribute Value:", value)
-                print("\t\tAttribute Probability",self.attributes[attribute][value] )
+                print("\t\tAttribute Count",self.attributes[attribute][value][1] )
+                print("\t\tAttribute Probability",self.attributes[attribute][value][0] )
             print()

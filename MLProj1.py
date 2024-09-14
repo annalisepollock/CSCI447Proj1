@@ -31,7 +31,6 @@ def main():
     # BREAST CANCER DATASET CLEANING
     breastCancerNoId = breastCancerDataFrame.drop(columns=['Sample_code_number']) # remove ID column
 
-    
     breastCancerClean = cleanData(breastCancerData, breastCancerNoId, False)
     breastCancerNoise = cleanData(breastCancerData, breastCancerNoId, True)
     breastCancerClean[0]['Bare_nuclei'] = breastCancerClean[0]['Bare_nuclei'].astype(int)
@@ -83,7 +82,6 @@ def main():
     breastCancerFoldsAccuracy = []
     breastCancerNoiseFoldsAccuracy = []
 
-    print("CLASSIFYING BREAST CANCER DATA")
     for fold in breastCancerFolds:
         train = breastCancerClean[0].drop(fold.index)
         learner = Learner.Learner(train, breastCancerClean[1], breastCancerClassification)
@@ -108,7 +106,7 @@ def main():
     glassFoldsAccuracy = []
     glassNoiseFoldsAccuracy = []
 
-    print("CLASSIFYING GLASS DATA")
+
     for fold in glassFolds:
         train = glassClean[0].drop(fold.index)
         learner = Learner.Learner(train, glassClean[1], glassClassification)
@@ -153,7 +151,7 @@ def main():
     for fold in irisNoiseFolds:
         train = irisNoise[0].drop(fold.index)
         learner = Learner.Learner(train, irisClean[1], irisNoiseClassification)
-        irisFoldsAccuracy.append(learner.classify(fold))
+        irisNoiseFoldsAccuracy.append(learner.classify(fold))
 
     irisNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(irisNoiseClassification, len(irisClean[0].columns), "Iris Noise")
 
@@ -168,7 +166,6 @@ def main():
     soybeanFoldsAccuracy = []
     soybeanNoiseFoldsAccuracy = []
 
-    print("CLASSIFYING SOYBEAN DATA")
     for fold in soybeanFolds:
         train = soybeanClean[0].drop(fold.index)
         learner = Learner.Learner(train, soybeanClean[1], soybeanClassification)
@@ -193,7 +190,6 @@ def main():
     votingFoldsAccuracy = []
     votingNoiseFoldsAccuracy = []
 
-    print("CLASSIFYING VOTING DATA")
     for fold in votingFolds:
         train = votingClean[0].drop(fold.index)
         learner = Learner.Learner(train, 'Class', votingClassification)
@@ -208,16 +204,13 @@ def main():
     votingNoiseStats = AlgorithmAccuracy.AlgorithmAccuracy(votingNoiseClassification, len(votingClean[0].columns), "Voting Noise")
  
     #FINISHED VOTING DATASET
-
     # PLOT DATA
     plotData("Breast Cancer", breastCancerStats, breastCancerNoiseStats, breastCancerFoldsAccuracy, breastCancerNoiseFoldsAccuracy)
     plotData("Glass", glassStats, glassNoiseStats, glassFoldsAccuracy, glassNoiseFoldsAccuracy)
     plotData("Iris", irisStats, irisNoiseStats, irisFoldsAccuracy, irisNoiseFoldsAccuracy)
     plotData("Soybean", soybeanStats, soybeanNoiseStats, soybeanFoldsAccuracy, soybeanNoiseFoldsAccuracy)
     plotData("Voting", votingStats, votingNoiseStats, votingFoldsAccuracy, votingNoiseFoldsAccuracy)
-
     # END PLOT DATA
-
 
 def plotData(datasetName, noNoiseStats, noiseStats, noNoiseAccuracy, NoiseAccuracy):
     # Categories for the x-axis
